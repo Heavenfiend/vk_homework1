@@ -18,12 +18,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalConfiguration
+import com.example.myapplication.ui.theme.MyApplicationTheme
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.LocalIndication
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            MyApplicationTheme {
                 Surface(Modifier.fillMaxSize()) {
                     MyApp()
                 }
@@ -35,6 +44,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp() {
     var items by rememberSaveable { mutableStateOf(listOf<Int>()) }
+    var selectedItems by rememberSaveable { mutableStateOf(setOf<Int>()) }
 
     val configuration = LocalConfiguration.current
     val columns = if (configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
@@ -54,27 +64,61 @@ fun MyApp() {
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(items.size) { index ->
+                val isSelected = selectedItems.contains(index)
+                val interactionSource = remember { MutableInteractionSource() }
+                val isPressed by interactionSource.collectIsPressedAsState()
+                val scale by animateFloatAsState(targetValue = if (isPressed) 0.95f else 1f)
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
+                        .graphicsLayer {
+                            scaleX = scale
+                            scaleY = scale
+                        }
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = LocalIndication.current
+                        ) {
+                            selectedItems = if (isSelected) {
+                                selectedItems - index
+                            } else {
+                                selectedItems + index
+                            }
+                        }
+                        .then(
+                            if (isSelected) {
+                                Modifier.border(
+                                    width = 4.dp,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(Color.Magenta, Color.Cyan, Color.Yellow)
+                                    ),
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                            } else {
+                                Modifier
+                            }
+                        )
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
-                                if (index % 2 == 0) Color.Red
-                                else Color.Blue
+                                if (index % 2 == 0) MaterialTheme.colorScheme.primaryContainer
+                                else MaterialTheme.colorScheme.secondaryContainer
                             ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "$index",
-                            color = Color.White,
+                            color = if (index % 2 == 0) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSecondaryContainer,
                             style = MaterialTheme.typography.headlineSmall
                         )
                     }
@@ -92,8 +136,7 @@ fun MyApp() {
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Add item",
-                tint = Color.White
+                contentDescription = "Add item"
             )
         }
     }
