@@ -19,6 +19,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalConfiguration
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Brush
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +39,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MyApp() {
     var items by rememberSaveable { mutableStateOf(listOf<Int>()) }
+    var selectedItems by rememberSaveable { mutableStateOf(setOf<Int>()) }
 
     val configuration = LocalConfiguration.current
     val columns = if (configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) {
@@ -60,10 +64,32 @@ fun MyApp() {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(items.size) { index ->
+                val isSelected = selectedItems.contains(index)
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
+                        .clickable {
+                            selectedItems = if (isSelected) {
+                                selectedItems - index
+                            } else {
+                                selectedItems + index
+                            }
+                        }
+                        .then(
+                            if (isSelected) {
+                                Modifier.border(
+                                    width = 4.dp,
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(Color.Magenta, Color.Cyan, Color.Yellow)
+                                    ),
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                            } else {
+                                Modifier
+                            }
+                        )
                 ) {
                     Box(
                         modifier = Modifier
