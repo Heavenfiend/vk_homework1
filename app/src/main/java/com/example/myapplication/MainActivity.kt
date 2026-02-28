@@ -86,6 +86,7 @@ fun MyApp() {
                             interactionSource = interactionSource,
                             indication = LocalIndication.current
                         ) {
+                        .clickable {
                             selectedItems = if (isSelected) {
                                 selectedItems - index
                             } else {
