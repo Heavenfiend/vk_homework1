@@ -18,12 +18,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalConfiguration
+import com.example.myapplication.ui.theme.MyApplicationTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            MyApplicationTheme {
                 Surface(Modifier.fillMaxSize()) {
                     MyApp()
                 }
@@ -54,6 +55,7 @@ fun MyApp() {
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -67,14 +69,15 @@ fun MyApp() {
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
-                                if (index % 2 == 0) Color.Red
-                                else Color.Blue
+                                if (index % 2 == 0) MaterialTheme.colorScheme.primaryContainer
+                                else MaterialTheme.colorScheme.secondaryContainer
                             ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "$index",
-                            color = Color.White,
+                            color = if (index % 2 == 0) MaterialTheme.colorScheme.onPrimaryContainer
+                            else MaterialTheme.colorScheme.onSecondaryContainer,
                             style = MaterialTheme.typography.headlineSmall
                         )
                     }
@@ -92,8 +95,7 @@ fun MyApp() {
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Add item",
-                tint = Color.White
+                contentDescription = "Add item"
             )
         }
     }
